@@ -23,14 +23,18 @@ timeout --signal=INT 600 maestro test .maestro \
 
 if [[ $status -ne 0 ]]; then
   # Artifact storage is not always reachable from every review environment,
-  # so put the end-state view hierarchy straight into the job log.
-  echo "--- view hierarchy at failure ---"
-  adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1 || true
-  adb shell cat /sdcard/ui.xml 2>/dev/null | head -c 30000 || true
-  echo ""
-  echo "--- end view hierarchy ---"
-  echo "--- maestro debug files ---"
-  find build -type f | head -50 || true
+  # so surface Maestro's own diagnosis straight into the job log. (A
+  # uiautomator dump does NOT work here — Maestro's driver owns the
+  # UiAutomation connection.)
+  echo "--- maestro.log tail ---"
+  tail -n 120 build/maestro-debug/.maestro/tests/*/maestro.log 2>/dev/null || true
+  echo "--- failing flow command trace (tail) ---"
+  for f in build/maestro-debug/.maestro/tests/*/commands-*.json; do
+    [[ -f "$f" ]] || continue
+    echo "== $f =="
+    tail -c 4000 "$f" || true
+    echo ""
+  done
 fi
 
 if [[ $status -eq 0 ]]; then

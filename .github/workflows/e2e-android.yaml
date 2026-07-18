@@ -100,3 +100,6 @@ jobs:
             build/recordings
             build/reports
           if-no-files-found: warn
+          # Maestro writes its debug output under a hidden .maestro/ dir,
+          # which upload-artifact skips by default.
+          include-hidden-files: true

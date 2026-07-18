@@ -10,12 +10,16 @@
 # Requires env: USERNAME, PASSWORD.
 appId: com.saucelabs.mydemoapp.android
 ---
+# Settle point: after a no-stop launch the header may not be interactive
+# yet; the assert waits for it before the tap (run 5 flaked here).
+- assertVisible:
+    id: ".*:id/menuIV"
 - tapOn:
     id: ".*:id/menuIV"
 - extendedWaitUntil:
     visible:
       text: "(?i)log ?(in|out).*"
-    timeout: 10000
+    timeout: 15000
 - runFlow:
     when:
       visible:

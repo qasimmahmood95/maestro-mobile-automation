@@ -9,7 +9,9 @@ set -u
 i=0
 while :; do
   i=$((i + 1))
-  if ! adb shell screenrecord --time-limit 180 --bit-rate 2000000 --size 720x1280 \
+  # Native resolution: a --size with a different aspect ratio makes
+  # screenrecord fail outright on some emulator images.
+  if ! adb shell screenrecord --time-limit 180 --bit-rate 2000000 \
     "/sdcard/e2e-$(printf '%02d' "$i").mp4"; then
     echo "record-screen: screenrecord ended (segment $i); stopping recorder" >&2
     exit 0
