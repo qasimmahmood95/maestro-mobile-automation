@@ -1,11 +1,11 @@
 # maestro-mobile-automation
 
+[![e2e-android](https://github.com/qasimmahmood95/maestro-mobile-automation/actions/workflows/e2e-android.yaml/badge.svg)](https://github.com/qasimmahmood95/maestro-mobile-automation/actions/workflows/e2e-android.yaml)
+
 Mobile E2E testing with [Maestro](https://maestro.mobile.dev) against a real
 Android app, run on emulators in GitHub Actions with recorded artifacts per
-run.
-
-> **Status: planning.** Flows land per the [milestone plan](docs/PLAN.md);
-> project conventions live in [CLAUDE.md](CLAUDE.md).
+run. Project conventions live in [CLAUDE.md](CLAUDE.md); the milestone
+history is in [docs/PLAN.md](docs/PLAN.md).
 
 ## App under test — and why
 
@@ -35,31 +35,68 @@ Runner-up considered: the Wikipedia Android app (used in Maestro's own
 examples) — rejected because its auth flow needs a real account and its
 content-heavy screens make assertions timing-sensitive.
 
-## Planned coverage
+## The flows
 
 | Flow | What it shows |
 |---|---|
-| `00-launch` | Cold start / first-screen assertions |
-| `10-login-success` | Auth happy path + login state reuse across flows |
+| `00-launch` | Cold start from cleared state, catalog renders |
+| `10-login-success` | Auth happy path via the `login` subflow |
+| `20-checkout-journey` | Catalog → cart → checkout → order placed |
 | `11-login-locked-out` | Negative path: exact locked-out error asserted |
-| `20-checkout-journey` | Catalog → cart → checkout, composed from subflows |
 
-Shared steps (login, add-to-cart) live in `.maestro/subflows/` and are
-composed with `runFlow` — no copy-pasted YAML between flows.
+Composition instead of copy-paste — every shared behaviour is a subflow
+under `.maestro/subflows/`, invoked with `runFlow`:
+
+```
+10-login-success ──▶ login ──▶ attempt-login
+11-login-locked-out ─────────▶ attempt-login
+20-checkout-journey ─▶ ensure-logged-in ─▶ login ─▶ attempt-login
+                  └──▶ add-first-product-to-cart
+```
+
+**State reuse, honestly labelled:** the app keeps its login state in memory
+only (a static flag — nothing persisted), so state can only be reused while
+the process lives. The suite exploits that where it's real: flows run in a
+fixed order (`.maestro/config.yaml`), the checkout journey launches with
+`stopApp: false` to inherit the session from the login flow, and its
+`ensure-logged-in` guard logs in again when running standalone.
 
 ## CI
 
-One Android emulator lane in GitHub Actions (KVM-enabled Linux runner,
-API 30), budgeted under 15 minutes, uploading per-run artifacts: failure
-screenshots, a full-session screen recording, and JUnit results. iOS is a
-documented local-only lane — see `docs/ios-local-lane.md` (M4).
+One workflow, two parallel emulator jobs on KVM-enabled Linux runners
+(API 30), budgeted under 15 minutes wall clock:
+
+- **e2e** — installs the SHA-256-verified APK and runs the whole suite.
+  Every run uploads artifacts: Maestro debug output (screenshots on
+  failure), a full-session screen recording, and JUnit XML.
+- **mutation-check** — inverts the locked-out assertion in the negative-path
+  flow and requires that flow to *fail*, proving the assertion is
+  load-bearing rather than vacuous.
+
+iOS is a documented local-only lane — see
+[docs/ios-local-lane.md](docs/ios-local-lane.md).
+
+## Running it yourself
+
+Emulator + CI is the reference environment; locally you need any Android
+emulator or device with the app installed:
+
+```sh
+curl -fsSL "https://get.maestro.mobile.dev" | bash
+# download + verify the pinned APK, then:
+adb install mda-2.2.0-25.apk
+maestro test .maestro
+```
 
 ## What this demonstrates / what it doesn't
 
 **Demonstrates:** Maestro flow design with real composition, auth state
-reuse, a negative-path test that provably can fail, Android emulator CI with
-published evidence per run, and deliberate scope control.
+reuse within a session, a negative-path test that provably can fail
+(mutation-checked in CI), Android emulator CI with published evidence per
+run, supply-chain hygiene for the app binary (pinned release + checksum),
+and deliberate scope control.
 
 **Doesn't demonstrate:** cross-platform CI matrices, device farms, visual
-regression, or large-suite orchestration — this repo intentionally closes a
-specific stack-coverage gap and stops there.
+regression, large-suite orchestration, or testing against a real backend —
+this repo intentionally closes a specific stack-coverage gap and stops
+there.

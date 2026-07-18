@@ -1,5 +1,9 @@
 # Milestone plan
 
+Status: M0 approved (plan reviewed, main created). M1–M4 implemented on the
+working branch; awaiting the CI-verification gates (clean-run + mutation
+check) which run in GitHub Actions — see the workflow for both jobs.
+
 Small repo, four milestones after this planning step. Each milestone is one
 PR, reviewed by a code-review subagent before opening; flow-bearing
 milestones additionally pass the verification subagent gate (clean-emulator
