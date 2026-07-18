@@ -50,13 +50,17 @@ for f in $(adb shell 'ls /sdcard/e2e-*.mp4 2>/dev/null' | tr -d '\r'); do
   adb pull "$f" build/recordings/ || true
 done
 
-# Force the emulator down while we still control the shell. The
-# emulator-runner's own teardown has repeatedly stalled ~9 minutes after a
-# passing run on the current runner image (the qemu process ignores
-# 'adb emu kill'), tripping the 15-minute job timeout. Hard-killing it here
-# leaves the action's teardown nothing to wait on.
+# Tear down everything that can hold the runner step's stdout pipe open.
+# Confirmed from CI logs: the suite and mutation check finish in ~4 min and
+# the emulator is already dead ~2s after the run, yet the emulator-runner
+# step then stalls ~9 min to the 15-minute job timeout, waiting on orphaned
+# background processes (the adb server daemon and the emulator's
+# crashpad_handler) that the runner only reaps at job cleanup. Kill them
+# here so the step can complete promptly.
 adb emu kill >/dev/null 2>&1 || true
 sleep 2
 pkill -9 -f qemu-system 2>/dev/null || true
+pkill -9 -f crashpad_handler 2>/dev/null || true
+adb kill-server >/dev/null 2>&1 || true
 
 exit $status
