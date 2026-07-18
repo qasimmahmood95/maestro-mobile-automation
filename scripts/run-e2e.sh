@@ -50,4 +50,13 @@ for f in $(adb shell 'ls /sdcard/e2e-*.mp4 2>/dev/null' | tr -d '\r'); do
   adb pull "$f" build/recordings/ || true
 done
 
+# Force the emulator down while we still control the shell. The
+# emulator-runner's own teardown has repeatedly stalled ~9 minutes after a
+# passing run on the current runner image (the qemu process ignores
+# 'adb emu kill'), tripping the 15-minute job timeout. Hard-killing it here
+# leaves the action's teardown nothing to wait on.
+adb emu kill >/dev/null 2>&1 || true
+sleep 2
+pkill -9 -f qemu-system 2>/dev/null || true
+
 exit $status
