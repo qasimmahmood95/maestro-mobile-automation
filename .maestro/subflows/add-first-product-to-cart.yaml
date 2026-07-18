@@ -3,14 +3,18 @@
 appId: com.saucelabs.mydemoapp.android
 ---
 - tapOn:
-    id: ".*productIV"
+    id: ".*:id/productIV"
     index: 0
 # Product detail: price and the add-to-cart button identify the screen.
 - assertVisible:
-    id: ".*priceTV"
+    id: ".*:id/priceTV"
+- scrollUntilVisible:
+    element:
+      id: ".*:id/cartBt"
+    direction: DOWN
 - tapOn:
-    id: ".*cartBt"
+    id: ".*:id/cartBt"
     text: "(?i)add to cart"
 # The header badge appears once the cart is non-empty.
 - assertVisible:
-    id: ".*cartTV"
+    id: ".*:id/cartTV"

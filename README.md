@@ -63,15 +63,15 @@ fixed order (`.maestro/config.yaml`), the checkout journey launches with
 
 ## CI
 
-One workflow, two parallel emulator jobs on KVM-enabled Linux runners
-(API 30), budgeted under 15 minutes wall clock:
-
-- **e2e** — installs the SHA-256-verified APK and runs the whole suite.
-  Every run uploads artifacts: Maestro debug output (screenshots on
-  failure), a full-session screen recording, and JUnit XML.
-- **mutation-check** — inverts the locked-out assertion in the negative-path
-  flow and requires that flow to *fail*, proving the assertion is
-  load-bearing rather than vacuous.
+One workflow, one emulator job on a KVM-enabled Linux runner (API 30,
+pixel_5 profile), budgeted under 15 minutes wall clock. The job installs
+the SHA-256-verified APK, runs the whole suite, and then — in the same
+emulator session — runs a **mutation check**: it inverts the locked-out
+assertion in the negative-path flow and requires that flow to *fail*.
+Because the un-mutated flow passed moments earlier on the same boot, a red
+inverted run can only mean the assertion itself is load-bearing, not an
+environmental accident. Every run uploads artifacts: Maestro debug output
+(screenshots on failure), a full-session screen recording, and JUnit XML.
 
 iOS is a documented local-only lane — see
 [docs/ios-local-lane.md](docs/ios-local-lane.md).
@@ -79,13 +79,15 @@ iOS is a documented local-only lane — see
 ## Running it yourself
 
 Emulator + CI is the reference environment; locally you need any Android
-emulator or device with the app installed:
+emulator or device:
 
 ```sh
 curl -fsSL "https://get.maestro.mobile.dev" | bash
-# download + verify the pinned APK, then:
-adb install mda-2.2.0-25.apk
-maestro test .maestro
+# APK_URL and APK_SHA256 exactly as pinned in .github/workflows/e2e-android.yaml:
+APK_URL=... APK_SHA256=... ./scripts/download-apk.sh
+adb install -r build/app.apk
+maestro test .maestro                       # full suite, suite order
+maestro test --include-tags smoke .maestro  # quick launch-only check
 ```
 
 ## What this demonstrates / what it doesn't

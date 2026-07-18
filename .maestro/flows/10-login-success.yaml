@@ -14,10 +14,11 @@ tags:
       PASSWORD: "10203040"
 # Independent proof of the logged-in state: the drawer now offers Log Out.
 - tapOn:
-    id: ".*menuIV"
+    id: ".*:id/menuIV"
 - assertVisible:
     text: "(?i)log ?out.*"
 - tapOn:
+    id: ".*:id/itemTV"
     text: "(?i)catalog.*"
 - assertVisible:
-    id: ".*productRV"
+    id: ".*:id/productRV"

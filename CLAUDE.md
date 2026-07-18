@@ -51,7 +51,14 @@ Rules for flows:
 - Shared steps live in `.maestro/subflows/` and are invoked with `runFlow`.
   If two flows share more than ~3 identical steps, extract a subflow.
 - Prefer `id:` selectors (the app has stable resource-ids) over text; fall
-  back to text only for assertions on user-visible copy.
+  back to text only for assertions on user-visible copy, or combined with an
+  `id:` to disambiguate views that share a resource-id (drawer rows).
+  Write ids anchored at the resource-name boundary — `id: ".*:id/nameET"` —
+  never as a bare suffix (`.*nameET` also matches `fullNameET`).
+- Never use `hideKeyboard` — on Android it is a BACK keypress, and the CI
+  AVDs use a hardware keyboard (no soft keyboard), so it pops the fragment.
+  Subflows that take parameters must not declare `env:` defaults: a flow's
+  own `env:` block overrides values passed via `runFlow`.
 - State reuse: only `00-launch.yaml` uses `clearState: true`. Later flows
   launch without clearing so login state persists across the sequence where
   Maestro allows; each flow must still self-heal (log in via subflow if
@@ -61,8 +68,12 @@ Rules for flows:
 
 ## CI
 
-- Single workflow: `.github/workflows/e2e-android.yaml`, ubuntu-latest with
-  KVM, `reactivecircus/android-emulator-runner`, API 30 x86_64.
+- Single workflow, single job: `.github/workflows/e2e-android.yaml`,
+  ubuntu-latest with KVM, `reactivecircus/android-emulator-runner`, API 30
+  x86_64, pixel_5 profile. The mutation check runs in the same emulator
+  session right after the suite passes (the suite's green run of the
+  negative-path flow is its control) — don't split it into a second job;
+  that doubles emulator cost and races the AVD cache.
 - Hard budget: **15 minutes wall clock**. If a change pushes past that, cut
   scope (AVD snapshot caching first, then fewer API levels — never add more).
 - Every run uploads artifacts: Maestro debug output (screenshots on failure),

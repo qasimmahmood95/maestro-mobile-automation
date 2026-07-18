@@ -2,21 +2,26 @@
 # go to the login form, submit the given credentials. Makes no claim about
 # the outcome — callers assert success or failure.
 #
-# Requires env: USERNAME, PASSWORD (no defaults on purpose).
+# Requires env: USERNAME, PASSWORD. Deliberately declares no env defaults:
+# a Maestro flow's own `env:` block overrides values passed via runFlow, so
+# defaults here would silently ignore the caller's credentials.
+#
+# No hideKeyboard anywhere: on Android it is a BACK keypress, and CI AVDs
+# run with a hardware keyboard (no soft keyboard shown), so it would pop
+# the login fragment instead.
 appId: com.saucelabs.mydemoapp.android
 ---
 - tapOn:
-    id: ".*menuIV"
+    id: ".*:id/menuIV"
+# Drawer rows share one resource-id, so the label text disambiguates.
 - tapOn:
+    id: ".*:id/itemTV"
     text: "(?i)log ?in.*"
 - tapOn:
-    id: "com.saucelabs.mydemoapp.android:id/nameET"
-- eraseText
+    id: ".*:id/nameET"
 - inputText: ${USERNAME}
 - tapOn:
-    id: ".*passwordET"
-- eraseText
+    id: ".*:id/passwordET"
 - inputText: ${PASSWORD}
-- hideKeyboard
 - tapOn:
-    id: ".*loginBtn"
+    id: ".*:id/loginBtn"

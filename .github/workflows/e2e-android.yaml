@@ -3,6 +3,10 @@ name: e2e-android
 on:
   push:
     branches: ["**"]
+    paths:
+      - ".maestro/**"
+      - "scripts/**"
+      - ".github/workflows/e2e-android.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -20,7 +24,11 @@ env:
 
 jobs:
   e2e:
-    name: Maestro E2E (API 30)
+    # One emulator session runs everything: the four-flow suite, then the
+    # negative-path mutation check against the same boot (see run-e2e.sh).
+    # One job keeps the 15-minute wall-clock budget honest and avoids two
+    # jobs racing on the shared AVD cache key.
+    name: Maestro E2E + mutation check (API 30)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -54,7 +62,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-api${{ env.API_LEVEL }}-v1
+          key: avd-api${{ env.API_LEVEL }}-pixel5-v1
 
       - name: Create AVD snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -63,17 +71,19 @@ jobs:
           api-level: ${{ env.API_LEVEL }}
           arch: x86_64
           target: default
+          profile: pixel_5
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Maestro flows
+      - name: Run Maestro flows and mutation check
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.API_LEVEL }}
           arch: x86_64
           target: default
+          profile: pixel_5
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
@@ -83,76 +93,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-artifacts-run${{ github.run_number }}
+          name: e2e-artifacts-run${{ github.run_number }}-attempt${{ github.run_attempt }}
           path: |
             build/maestro-debug
+            build/maestro-debug-mutation
             build/recordings
             build/reports
-          if-no-files-found: warn
-
-  mutation-check:
-    name: Negative-path mutation check
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
-            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Download and verify app APK
-        run: ./scripts/download-apk.sh
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Install Maestro
-        run: |
-          curl -fsSL "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-
-      - name: AVD cache
-        uses: actions/cache@v4
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-api${{ env.API_LEVEL }}-v1
-
-      - name: Create AVD snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.API_LEVEL }}
-          arch: x86_64
-          target: default
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
-
-      - name: Run inverted locked-out flow (must fail)
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.API_LEVEL }}
-          arch: x86_64
-          target: default
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: ./scripts/mutation-check.sh
-
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mutation-check-artifacts-run${{ github.run_number }}
-          path: build/maestro-debug-mutation
           if-no-files-found: warn

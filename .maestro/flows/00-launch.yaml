@@ -6,14 +6,12 @@ tags:
 ---
 - launchApp:
     clearState: true
-# First launch after a state wipe can be slow on a cold emulator; give the
-# catalog extra time before the regular assertion timeouts take over.
+# First launch after a state wipe can be slow on a cold emulator; wait for
+# the catalog header (id + user-visible copy) with a generous timeout.
 - extendedWaitUntil:
     visible:
-      id: ".*productTV"
+      id: ".*:id/productTV"
+      text: "Products"
     timeout: 30000
 - assertVisible:
-    id: ".*productTV"
-    text: "Products"
-- assertVisible:
-    id: ".*productRV"
+    id: ".*:id/productRV"

@@ -16,7 +16,7 @@ tags:
       PASSWORD: "10203040"
 # Still on the login form — the app must not have navigated away.
 - assertVisible:
-    id: ".*loginBtn"
+    id: ".*:id/loginBtn"
 # The exact locked-out message. mutation-check.sh inverts this line in CI to
 # prove the assertion can fail — keep it in this single-line form.
 - assertVisible: "Sorry this user has been locked out."

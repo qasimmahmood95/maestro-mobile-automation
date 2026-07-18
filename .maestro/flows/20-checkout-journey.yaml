@@ -2,7 +2,12 @@
 # order placed. Launches with stopApp: false so that, when the suite runs in
 # order, the in-memory login from 10-login-success is still alive — and
 # self-heals via ensure-logged-in so it also passes standalone from a cold
-# start.
+# start. (The guard assumes the app is on the catalog, which both the cold
+# start and the suite ordering guarantee.)
+#
+# Forms are longer than one screen on a phone profile and Maestro never
+# scrolls on its own, hence the scrollUntilVisible steps before lower
+# fields and buttons.
 appId: com.saucelabs.mydemoapp.android
 name: 20-checkout-journey
 tags:
@@ -10,59 +15,81 @@ tags:
 ---
 - launchApp:
     stopApp: false
-- runFlow: ../subflows/ensure-logged-in.yaml
+- runFlow:
+    file: ../subflows/ensure-logged-in.yaml
+    env:
+      USERNAME: bob@example.com
+      PASSWORD: "10203040"
 - runFlow: ../subflows/add-first-product-to-cart.yaml
 # Header cart icon → cart review.
 - tapOn:
-    id: ".*cartRL"
+    id: ".*:id/cartRL"
 - assertVisible:
     text: "(?i)my cart"
 - tapOn:
-    id: ".*cartBt"
+    id: ".*:id/cartBt"
 # Shipping address (already logged in, so checkout goes straight here).
 - assertVisible:
-    id: ".*fullNameET"
+    id: ".*:id/fullNameET"
 - tapOn:
-    id: ".*fullNameET"
+    id: ".*:id/fullNameET"
 - inputText: "Rebecca Winter"
 - tapOn:
-    id: ".*address1ET"
+    id: ".*:id/address1ET"
 - inputText: "Mandorley 112"
 - tapOn:
-    id: ".*cityET"
+    id: ".*:id/cityET"
 - inputText: "Truro"
+- scrollUntilVisible:
+    element:
+      id: ".*:id/zipET"
+    direction: DOWN
 - tapOn:
-    id: ".*zipET"
+    id: ".*:id/zipET"
 - inputText: "89750"
+- scrollUntilVisible:
+    element:
+      id: ".*:id/countryET"
+    direction: DOWN
 - tapOn:
-    id: ".*countryET"
+    id: ".*:id/countryET"
 - inputText: "United Kingdom"
-- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: ".*:id/paymentBtn"
+    direction: DOWN
 - tapOn:
-    id: ".*paymentBtn"
+    id: ".*:id/paymentBtn"
 # Payment details.
 - assertVisible:
-    id: ".*cardNumberET"
+    id: ".*:id/cardNumberET"
 - tapOn:
-    id: "com.saucelabs.mydemoapp.android:id/nameET"
+    id: ".*:id/nameET"
 - inputText: "Rebecca Winter"
 - tapOn:
-    id: ".*cardNumberET"
+    id: ".*:id/cardNumberET"
 - inputText: "3258125675687891"
 - tapOn:
-    id: ".*expirationDateET"
+    id: ".*:id/expirationDateET"
 - inputText: "0330"
+- scrollUntilVisible:
+    element:
+      id: ".*:id/securityCodeET"
+    direction: DOWN
 - tapOn:
-    id: ".*securityCodeET"
+    id: ".*:id/securityCodeET"
 - inputText: "123"
-- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: ".*:id/paymentBtn"
+    direction: DOWN
 - tapOn:
-    id: ".*paymentBtn"
+    id: ".*:id/paymentBtn"
 # Review order → place it.
 - assertVisible:
     text: "(?i)review your order"
 - tapOn:
-    id: ".*paymentBtn"
+    id: ".*:id/paymentBtn"
 # Confirmation.
 - assertVisible:
     text: "(?i)checkout complete"
@@ -70,6 +97,6 @@ tags:
     text: "(?i)thank you for your order.*"
 # Back to shopping — leaves the app on the catalog, still logged in.
 - tapOn:
-    id: ".*shoopingBt"
+    id: ".*:id/shoopingBt"
 - assertVisible:
-    id: ".*productRV"
+    id: ".*:id/productRV"

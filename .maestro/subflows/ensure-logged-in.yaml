@@ -1,14 +1,21 @@
 # Self-healing auth guard: from the catalog screen, make sure the user is
-# logged in, whichever state the app is in. Peeks at the drawer — it shows
-# "Log In" when logged out and "Log Out" when logged in — then either runs
-# the login subflow or just closes the drawer again. Ends on the catalog.
+# logged in, whichever state the app is in. Opens the drawer — it shows
+# "Log In" when logged out and "Log Out" when logged in — waits until one
+# of the two labels has actually rendered (conditions don't retry, so
+# checking a still-animating drawer would silently skip both branches),
+# then either runs the login subflow or just closes the drawer. Ends on
+# the catalog. The branch that doesn't match costs Maestro's ~17s lookup
+# timeout once per run — accepted, it buys standalone re-runnability.
+#
+# Requires env: USERNAME, PASSWORD.
 appId: com.saucelabs.mydemoapp.android
-env:
-  USERNAME: bob@example.com
-  PASSWORD: "10203040"
 ---
 - tapOn:
-    id: ".*menuIV"
+    id: ".*:id/menuIV"
+- extendedWaitUntil:
+    visible:
+      text: "(?i)log ?(in|out).*"
+    timeout: 10000
 - runFlow:
     when:
       visible:
@@ -16,6 +23,7 @@ env:
     commands:
       # Close the drawer first — the login subflow opens it itself.
       - tapOn:
+          id: ".*:id/itemTV"
           text: "(?i)catalog.*"
       - runFlow:
           file: login.yaml
@@ -28,6 +36,7 @@ env:
         text: "(?i)log ?out.*"
     commands:
       - tapOn:
+          id: ".*:id/itemTV"
           text: "(?i)catalog.*"
 - assertVisible:
-    id: ".*productRV"
+    id: ".*:id/productRV"
