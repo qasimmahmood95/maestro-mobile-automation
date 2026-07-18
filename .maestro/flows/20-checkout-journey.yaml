@@ -1,18 +1,18 @@
-# Core shopping journey: catalog → product detail → cart → checkout →
-# order placed. Launches with stopApp: false so that, when the suite runs in
-# order, the in-memory login from 10-login-success is still alive — and
+# Core shopping journey: catalog to product detail to cart to
+# checkout to order placed. Launches with stopApp: false so that, when the suite runs in
+# order, the in-memory login from 10-login-success is still alive, and
 # self-heals via ensure-logged-in so it also passes standalone from a cold
 # start. (The guard assumes the app is on the catalog, which both the cold
 # start and the suite ordering guarantee.)
 #
 # Form-field discipline, learned from CI runs 2-6:
 # - Maestro never scrolls on its own and the soft keyboard hides the lower
-#   half of these forms → scrollUntilVisible before below-the-fold taps and
+#   half of these forms, so: scrollUntilVisible before below-the-fold taps and
 #   hideKeyboard directly after every inputText (see CLAUDE.md).
 # - Tapping the next field while the keyboard is still animating can drop
 #   the typed text entirely (run 6: city stayed empty while later fields
-#   filled) → each input is asserted after the keyboard closes.
-# - Input values deliberately differ from the fields' hint texts — the
+#   filled), so each input is asserted after the keyboard closes.
+# - Input values deliberately differ from the fields' hint texts; the
 #   app's hints are themselves realistic values (e.g. "Truro"), so typing
 #   the hint value makes the landed-assert vacuous.
 appId: com.saucelabs.mydemoapp.android
@@ -28,7 +28,7 @@ tags:
       USERNAME: bob@example.com
       PASSWORD: "10203040"
 - runFlow: ../subflows/add-first-product-to-cart.yaml
-# Header cart icon → cart review.
+# Header cart icon opens the cart review.
 - tapOn:
     id: ".*:id/cartRL"
 - assertVisible:
@@ -120,7 +120,7 @@ tags:
     centerElement: true
 - tapOn:
     id: ".*:id/paymentBtn"
-# Review order → place it.
+# Review order, then place it.
 - assertVisible:
     text: "(?i)review your order"
 - scrollUntilVisible:
@@ -135,7 +135,7 @@ tags:
     text: "(?i)checkout complete"
 - assertVisible:
     text: "(?i)thank you for your order.*"
-# Back to shopping — leaves the app on the catalog, still logged in.
+# Back to shopping; leaves the app on the catalog, still logged in.
 - tapOn:
     id: ".*:id/shoopingBt"
 - assertVisible:

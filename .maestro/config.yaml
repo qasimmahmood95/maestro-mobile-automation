@@ -1,4 +1,4 @@
-# Maestro workspace config — run the whole suite with: maestro test .maestro
+# Maestro workspace config. Run the whole suite with: maestro test .maestro
 #
 # File numbering groups flows by theme (0x launch, 1x auth, 2x journey).
 # Execution order differs from the numbering in one place: the checkout

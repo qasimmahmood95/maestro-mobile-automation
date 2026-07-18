@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs inside the emulator-runner step: install the verified APK, record the
-# whole session, run the Maestro suite, then — only if the suite passed —
+# whole session, run the Maestro suite, then, only if the suite passed,
 # run the mutation check in the same emulator session (the suite's green
 # run of the negative-path flow is the control for it). Artifacts are
 # gathered regardless of the outcome.
@@ -24,7 +24,7 @@ timeout --signal=INT 600 maestro test .maestro \
 if [[ $status -ne 0 ]]; then
   # Artifact storage is not always reachable from every review environment,
   # so surface Maestro's own diagnosis straight into the job log. (A
-  # uiautomator dump does NOT work here — Maestro's driver owns the
+  # uiautomator dump does NOT work here since Maestro's driver owns the
   # UiAutomation connection.)
   echo "--- maestro.log tail ---"
   tail -n 120 build/maestro-debug/.maestro/tests/*/maestro.log 2>/dev/null || true

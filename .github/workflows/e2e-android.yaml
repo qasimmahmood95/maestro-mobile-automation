@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 env:
-  # Pinned app under test — never point at "latest" (see CLAUDE.md).
+  # Pinned app under test; never point at "latest" (see CLAUDE.md).
   APK_URL: https://github.com/saucelabs/my-demo-app-android/releases/download/2.2.0/mda-2.2.0-25.apk
   APK_SHA256: "318ef64bdcaff18e576d962ab1f557e0a2683b9b5210a6bb6b25cb0caeef62b4"
   API_LEVEL: "30"
@@ -50,8 +50,10 @@ jobs:
           java-version: "17"
 
       - name: Install Maestro
+        # Pinned to the version the suite was verified against; bump
+        # deliberately, not via "latest".
         run: |
-          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          curl -fsSL "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.6.1 bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
           "$HOME/.maestro/bin/maestro" --version
 

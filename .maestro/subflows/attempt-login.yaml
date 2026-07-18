@@ -1,6 +1,6 @@
 # Attempt a login from any screen showing the app header: open the drawer,
 # go to the login form, submit the given credentials. Makes no claim about
-# the outcome — callers assert success or failure.
+# the outcome; callers assert success or failure.
 #
 # Requires env: USERNAME, PASSWORD. Deliberately declares no env defaults:
 # a Maestro flow's own `env:` block overrides values passed via runFlow, so

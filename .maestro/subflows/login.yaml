@@ -2,7 +2,7 @@
 # the product catalog.
 #
 # Requires env: USERNAME, PASSWORD (passed through to attempt-login; no
-# defaults here — see the note in attempt-login.yaml).
+# defaults here, see the note in attempt-login.yaml).
 appId: com.saucelabs.mydemoapp.android
 ---
 - runFlow:

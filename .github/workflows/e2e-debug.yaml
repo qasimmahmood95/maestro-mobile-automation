@@ -1,7 +1,7 @@
 name: e2e-debug
 
 # Fast iteration lane: run ONE flow on the emulator via manual dispatch.
-# Not part of the merge gate — the full suite in e2e-android.yaml is.
+# Not part of the merge gate; the full suite in e2e-android.yaml is.
 on:
   workflow_dispatch:
     inputs:
@@ -43,7 +43,7 @@ jobs:
 
       - name: Install Maestro
         run: |
-          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          curl -fsSL "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.6.1 bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: AVD cache
