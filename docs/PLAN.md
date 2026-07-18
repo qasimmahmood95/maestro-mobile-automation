@@ -1,8 +1,12 @@
 # Milestone plan
 
-Status: M0 approved (plan reviewed, main created). M1–M4 implemented on the
-working branch; awaiting the CI-verification gates (clean-run + mutation
-check) which run in GitHub Actions — see the workflow for both jobs.
+Status: **all milestones complete.** M0 approved; M1–M4 implemented and
+verified in CI — run 8 on the milestone branch: 4/4 flows passed in 2m 40s
+on a clean emulator boot, mutation check confirmed the inverted locked-out
+assertion fails ("Mutation detected"), full job ~6 min against the 15-min
+budget, artifacts (JUnit, session videos, Maestro debug output) uploaded.
+Stabilisation findings from the CI runs are encoded as rules in CLAUDE.md
+(keyboard discipline, anchored id selectors, hint-identical input values).
 
 Small repo, four milestones after this planning step. Each milestone is one
 PR, reviewed by a code-review subagent before opening; flow-bearing
