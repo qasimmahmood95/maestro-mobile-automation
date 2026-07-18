@@ -1,0 +1,22 @@
+# Attempt a login from any screen showing the app header: open the drawer,
+# go to the login form, submit the given credentials. Makes no claim about
+# the outcome — callers assert success or failure.
+#
+# Requires env: USERNAME, PASSWORD (no defaults on purpose).
+appId: com.saucelabs.mydemoapp.android
+---
+- tapOn:
+    id: ".*menuIV"
+- tapOn:
+    text: "(?i)log ?in.*"
+- tapOn:
+    id: "com.saucelabs.mydemoapp.android:id/nameET"
+- eraseText
+- inputText: ${USERNAME}
+- tapOn:
+    id: ".*passwordET"
+- eraseText
+- inputText: ${PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: ".*loginBtn"

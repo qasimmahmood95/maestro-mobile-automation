@@ -1,0 +1,15 @@
+# Log in and verify it worked: after a successful login the app returns to
+# the product catalog. Defaults to the canonical happy-path user.
+appId: com.saucelabs.mydemoapp.android
+env:
+  USERNAME: bob@example.com
+  PASSWORD: "10203040"
+---
+- runFlow:
+    file: attempt-login.yaml
+    env:
+      USERNAME: ${USERNAME}
+      PASSWORD: ${PASSWORD}
+- assertVisible:
+    id: ".*productTV"
+    text: "Products"

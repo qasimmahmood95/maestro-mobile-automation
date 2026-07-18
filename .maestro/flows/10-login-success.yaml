@@ -1,0 +1,23 @@
+# Auth happy path. A fresh process always starts logged out (the app keeps
+# login state in memory only), so this flow exercises the real login every
+# time, then leaves the app logged in on the catalog for the next flow.
+appId: com.saucelabs.mydemoapp.android
+name: 10-login-success
+tags:
+  - auth
+---
+- launchApp
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: bob@example.com
+      PASSWORD: "10203040"
+# Independent proof of the logged-in state: the drawer now offers Log Out.
+- tapOn:
+    id: ".*menuIV"
+- assertVisible:
+    text: "(?i)log ?out.*"
+- tapOn:
+    text: "(?i)catalog.*"
+- assertVisible:
+    id: ".*productRV"

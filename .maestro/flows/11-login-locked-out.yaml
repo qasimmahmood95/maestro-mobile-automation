@@ -1,0 +1,22 @@
+# Negative path: alice@example.com is hard-coded as locked out in the app.
+# The flow must assert the exact error copy — not merely "login failed".
+# Runs last in the suite (see config.yaml) because it ends on the login
+# screen with the error showing.
+appId: com.saucelabs.mydemoapp.android
+name: 11-login-locked-out
+tags:
+  - auth
+  - negative
+---
+- launchApp
+- runFlow:
+    file: ../subflows/attempt-login.yaml
+    env:
+      USERNAME: alice@example.com
+      PASSWORD: "10203040"
+# Still on the login form — the app must not have navigated away.
+- assertVisible:
+    id: ".*loginBtn"
+# The exact locked-out message. mutation-check.sh inverts this line in CI to
+# prove the assertion can fail — keep it in this single-line form.
+- assertVisible: "Sorry this user has been locked out."

@@ -1,0 +1,33 @@
+# Self-healing auth guard: from the catalog screen, make sure the user is
+# logged in, whichever state the app is in. Peeks at the drawer — it shows
+# "Log In" when logged out and "Log Out" when logged in — then either runs
+# the login subflow or just closes the drawer again. Ends on the catalog.
+appId: com.saucelabs.mydemoapp.android
+env:
+  USERNAME: bob@example.com
+  PASSWORD: "10203040"
+---
+- tapOn:
+    id: ".*menuIV"
+- runFlow:
+    when:
+      visible:
+        text: "(?i)log ?in.*"
+    commands:
+      # Close the drawer first — the login subflow opens it itself.
+      - tapOn:
+          text: "(?i)catalog.*"
+      - runFlow:
+          file: login.yaml
+          env:
+            USERNAME: ${USERNAME}
+            PASSWORD: ${PASSWORD}
+- runFlow:
+    when:
+      visible:
+        text: "(?i)log ?out.*"
+    commands:
+      - tapOn:
+          text: "(?i)catalog.*"
+- assertVisible:
+    id: ".*productRV"
