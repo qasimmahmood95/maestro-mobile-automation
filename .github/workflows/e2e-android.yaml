@@ -21,6 +21,10 @@ env:
   APK_URL: https://github.com/saucelabs/my-demo-app-android/releases/download/2.2.0/mda-2.2.0-25.apk
   APK_SHA256: "318ef64bdcaff18e576d962ab1f557e0a2683b9b5210a6bb6b25cb0caeef62b4"
   API_LEVEL: "30"
+  # The emulator-runner force-kills the emulator this many seconds after
+  # requesting shutdown. The default 20s teardown occasionally stalls long
+  # after the suite has already finished; a shorter wait bounds that tail.
+  ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: "8"
 
 jobs:
   e2e:
