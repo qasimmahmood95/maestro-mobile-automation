@@ -55,8 +55,11 @@ Rules for flows:
   `id:` to disambiguate views that share a resource-id (drawer rows).
   Write ids anchored at the resource-name boundary — `id: ".*:id/nameET"` —
   never as a bare suffix (`.*nameET` also matches `fullNameET`).
-- Never use `hideKeyboard` — on Android it is a BACK keypress, and the CI
-  AVDs use a hardware keyboard (no soft keyboard), so it pops the fragment.
+- `hideKeyboard` is a BACK keypress on Android: with the keyboard closed it
+  pops the fragment instead. Use it ONLY on the line directly after an
+  `inputText` (the soft keyboard is then guaranteed up — CI runs confirmed
+  the IME appears and hides the lower half of long forms), never anywhere
+  else.
   Subflows that take parameters must not declare `env:` defaults: a flow's
   own `env:` block overrides values passed via `runFlow`.
 - State reuse: only `00-launch.yaml` uses `clearState: true`. Later flows

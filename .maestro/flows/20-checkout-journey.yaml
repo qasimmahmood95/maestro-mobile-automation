@@ -44,6 +44,10 @@ tags:
 - tapOn:
     id: ".*:id/cityET"
 - inputText: "Truro"
+# hideKeyboard is safe here and below: it always directly follows typing,
+# so the soft keyboard is guaranteed up and BACK dismisses it (runs 2-3
+# proved the IME appears in CI and hides the lower half of the form).
+- hideKeyboard
 - scrollUntilVisible:
     element:
       id: ".*:id/zipET"
@@ -51,6 +55,7 @@ tags:
 - tapOn:
     id: ".*:id/zipET"
 - inputText: "89750"
+- hideKeyboard
 - scrollUntilVisible:
     element:
       id: ".*:id/countryET"
@@ -58,6 +63,7 @@ tags:
 - tapOn:
     id: ".*:id/countryET"
 - inputText: "United Kingdom"
+- hideKeyboard
 - scrollUntilVisible:
     element:
       id: ".*:id/paymentBtn"
@@ -73,6 +79,7 @@ tags:
 - tapOn:
     id: ".*:id/cardNumberET"
 - inputText: "3258125675687891"
+- hideKeyboard
 - scrollUntilVisible:
     element:
       id: ".*:id/expirationDateET"
@@ -80,6 +87,7 @@ tags:
 - tapOn:
     id: ".*:id/expirationDateET"
 - inputText: "0330"
+- hideKeyboard
 - scrollUntilVisible:
     element:
       id: ".*:id/securityCodeET"
@@ -87,6 +95,7 @@ tags:
 - tapOn:
     id: ".*:id/securityCodeET"
 - inputText: "123"
+- hideKeyboard
 - scrollUntilVisible:
     element:
       id: ".*:id/paymentBtn"

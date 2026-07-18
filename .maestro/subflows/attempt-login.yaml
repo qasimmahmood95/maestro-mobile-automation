@@ -6,9 +6,8 @@
 # a Maestro flow's own `env:` block overrides values passed via runFlow, so
 # defaults here would silently ignore the caller's credentials.
 #
-# No hideKeyboard anywhere: on Android it is a BACK keypress, and CI AVDs
-# run with a hardware keyboard (no soft keyboard shown), so it would pop
-# the login fragment instead.
+# No hideKeyboard here: the login form is short enough that the button
+# stays reachable with the keyboard up (see CLAUDE.md for the rule).
 appId: com.saucelabs.mydemoapp.android
 ---
 - tapOn:
