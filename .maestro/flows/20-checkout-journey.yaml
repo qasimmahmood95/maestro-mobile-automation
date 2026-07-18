@@ -37,6 +37,10 @@ tags:
 - tapOn:
     id: ".*:id/address1ET"
 - inputText: "Mandorley 112"
+- scrollUntilVisible:
+    element:
+      id: ".*:id/cityET"
+    direction: DOWN
 - tapOn:
     id: ".*:id/cityET"
 - inputText: "Truro"
@@ -69,6 +73,10 @@ tags:
 - tapOn:
     id: ".*:id/cardNumberET"
 - inputText: "3258125675687891"
+- scrollUntilVisible:
+    element:
+      id: ".*:id/expirationDateET"
+    direction: DOWN
 - tapOn:
     id: ".*:id/expirationDateET"
 - inputText: "0330"
