@@ -1,0 +1,111 @@
+name: e2e-android
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - ".maestro/**"
+      - "scripts/**"
+      - ".github/workflows/e2e-android.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Pinned app under test; never point at "latest" (see CLAUDE.md).
+  APK_URL: https://github.com/saucelabs/my-demo-app-android/releases/download/2.2.0/mda-2.2.0-25.apk
+  APK_SHA256: "318ef64bdcaff18e576d962ab1f557e0a2683b9b5210a6bb6b25cb0caeef62b4"
+  API_LEVEL: "30"
+  # The emulator-runner force-kills the emulator this many seconds after
+  # requesting shutdown. The default 20s teardown occasionally stalls long
+  # after the suite has already finished; a shorter wait bounds that tail.
+  ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: "8"
+
+jobs:
+  e2e:
+    # One emulator session runs everything: the four-flow suite, then the
+    # negative-path mutation check against the same boot (see run-e2e.sh).
+    # One job keeps the 15-minute wall-clock budget honest and avoids two
+    # jobs racing on the shared AVD cache key.
+    name: Maestro E2E + mutation check (API 30)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Download and verify app APK
+        run: ./scripts/download-apk.sh
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Maestro
+        # Pinned to the version the suite was verified against; bump
+        # deliberately, not via "latest".
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.6.1 bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api${{ env.API_LEVEL }}-pixel5-v1
+
+      - name: Create AVD snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.API_LEVEL }}
+          arch: x86_64
+          target: default
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run Maestro flows and mutation check
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.API_LEVEL }}
+          arch: x86_64
+          target: default
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./scripts/run-e2e.sh
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts-run${{ github.run_number }}-attempt${{ github.run_attempt }}
+          path: |
+            build/maestro-debug
+            build/maestro-debug-mutation
+            build/recordings
+            build/reports
+          if-no-files-found: warn
+          # Maestro writes its debug output under a hidden .maestro/ dir,
+          # which upload-artifact skips by default.
+          include-hidden-files: true

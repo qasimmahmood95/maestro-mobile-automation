@@ -1,0 +1,26 @@
+# Attempt a login from any screen showing the app header: open the drawer,
+# go to the login form, submit the given credentials. Makes no claim about
+# the outcome; callers assert success or failure.
+#
+# Requires env: USERNAME, PASSWORD. Deliberately declares no env defaults:
+# a Maestro flow's own `env:` block overrides values passed via runFlow, so
+# defaults here would silently ignore the caller's credentials.
+#
+# No hideKeyboard here: the login form is short enough that the button
+# stays reachable with the keyboard up (see CLAUDE.md for the rule).
+appId: com.saucelabs.mydemoapp.android
+---
+- tapOn:
+    id: ".*:id/menuIV"
+# Drawer rows share one resource-id, so the label text disambiguates.
+- tapOn:
+    id: ".*:id/itemTV"
+    text: "(?i)log ?in.*"
+- tapOn:
+    id: ".*:id/nameET"
+- inputText: ${USERNAME}
+- tapOn:
+    id: ".*:id/passwordET"
+- inputText: ${PASSWORD}
+- tapOn:
+    id: ".*:id/loginBtn"

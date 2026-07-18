@@ -1,0 +1,15 @@
+# Log in and verify it worked: after a successful login the app returns to
+# the product catalog.
+#
+# Requires env: USERNAME, PASSWORD (passed through to attempt-login; no
+# defaults here, see the note in attempt-login.yaml).
+appId: com.saucelabs.mydemoapp.android
+---
+- runFlow:
+    file: attempt-login.yaml
+    env:
+      USERNAME: ${USERNAME}
+      PASSWORD: ${PASSWORD}
+- assertVisible:
+    id: ".*:id/productTV"
+    text: "Products"

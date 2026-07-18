@@ -1,0 +1,18 @@
+# Maestro workspace config. Run the whole suite with: maestro test .maestro
+#
+# File numbering groups flows by theme (0x launch, 1x auth, 2x journey).
+# Execution order differs from the numbering in one place: the checkout
+# journey runs directly after the login flow so it can reuse the in-memory
+# auth state (the app keeps login in a static flag, not on disk), and the
+# locked-out negative path runs last because it deliberately ends on the
+# login screen showing an error.
+flows:
+  - "flows/*.yaml"
+
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - 00-launch
+    - 10-login-success
+    - 20-checkout-journey
+    - 11-login-locked-out

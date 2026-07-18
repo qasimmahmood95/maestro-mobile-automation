@@ -1,0 +1,17 @@
+# Cold start from a clean slate: the only flow allowed to clear app state.
+appId: com.saucelabs.mydemoapp.android
+name: 00-launch
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+# First launch after a state wipe can be slow on a cold emulator; wait for
+# the catalog header (id + user-visible copy) with a generous timeout.
+- extendedWaitUntil:
+    visible:
+      id: ".*:id/productTV"
+      text: "Products"
+    timeout: 30000
+- assertVisible:
+    id: ".*:id/productRV"

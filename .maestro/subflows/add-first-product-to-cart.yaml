@@ -1,0 +1,20 @@
+# From the catalog: open the first product tile and add one unit to the
+# cart. Ends on the product detail screen.
+appId: com.saucelabs.mydemoapp.android
+---
+- tapOn:
+    id: ".*:id/productIV"
+    index: 0
+# Product detail: price and the add-to-cart button identify the screen.
+- assertVisible:
+    id: ".*:id/priceTV"
+- scrollUntilVisible:
+    element:
+      id: ".*:id/cartBt"
+    direction: DOWN
+- tapOn:
+    id: ".*:id/cartBt"
+    text: "(?i)add to cart"
+# The header badge appears once the cart is non-empty.
+- assertVisible:
+    id: ".*:id/cartTV"
