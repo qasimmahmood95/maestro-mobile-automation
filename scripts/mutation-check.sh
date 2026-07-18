@@ -13,7 +13,7 @@ flow=.maestro/flows/11-login-locked-out.yaml
 needle='- assertVisible: "Sorry this user has been locked out."'
 inverted="${needle/assertVisible/assertNotVisible}"
 
-grep -qF "$needle" "$flow" || {
+grep -qF -- "$needle" "$flow" || {
   echo "::error::Locked-out assertion not found in $flow in the exact form mutation-check.sh expects."
   exit 1
 }
