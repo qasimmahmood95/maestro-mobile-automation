@@ -5,9 +5,16 @@
 # start. (The guard assumes the app is on the catalog, which both the cold
 # start and the suite ordering guarantee.)
 #
-# Forms are longer than one screen on a phone profile and Maestro never
-# scrolls on its own, hence the scrollUntilVisible steps before lower
-# fields and buttons.
+# Form-field discipline, learned from CI runs 2-6:
+# - Maestro never scrolls on its own and the soft keyboard hides the lower
+#   half of these forms → scrollUntilVisible before below-the-fold taps and
+#   hideKeyboard directly after every inputText (see CLAUDE.md).
+# - Tapping the next field while the keyboard is still animating can drop
+#   the typed text entirely (run 6: city stayed empty while later fields
+#   filled) → each input is asserted after the keyboard closes.
+# - Input values deliberately differ from the fields' hint texts — the
+#   app's hints are themselves realistic values (e.g. "Truro"), so typing
+#   the hint value makes the landed-assert vacuous.
 appId: com.saucelabs.mydemoapp.android
 name: 20-checkout-journey
 tags:
@@ -33,37 +40,41 @@ tags:
     id: ".*:id/fullNameET"
 - tapOn:
     id: ".*:id/fullNameET"
-- inputText: "Rebecca Winter"
+- inputText: "Casey Tester"
+- hideKeyboard
+- assertVisible: "Casey Tester"
 - tapOn:
     id: ".*:id/address1ET"
-- inputText: "Mandorley 112"
+- inputText: "Test Street 7"
+- hideKeyboard
+- assertVisible: "Test Street 7"
 - scrollUntilVisible:
     element:
       id: ".*:id/cityET"
     direction: DOWN
 - tapOn:
     id: ".*:id/cityET"
-- inputText: "Truro"
-# hideKeyboard is safe here and below: it always directly follows typing,
-# so the soft keyboard is guaranteed up and BACK dismisses it (runs 2-3
-# proved the IME appears in CI and hides the lower half of the form).
+- inputText: "Bristol"
 - hideKeyboard
+- assertVisible: "Bristol"
 - scrollUntilVisible:
     element:
       id: ".*:id/zipET"
     direction: DOWN
 - tapOn:
     id: ".*:id/zipET"
-- inputText: "89750"
+- inputText: "12345"
 - hideKeyboard
+- assertVisible: "12345"
 - scrollUntilVisible:
     element:
       id: ".*:id/countryET"
     direction: DOWN
 - tapOn:
     id: ".*:id/countryET"
-- inputText: "United Kingdom"
+- inputText: "England"
 - hideKeyboard
+- assertVisible: "England"
 # centerElement so the button isn't left half-clipped at the screen edge
 # where a center-tap can miss.
 - scrollUntilVisible:
@@ -78,14 +89,13 @@ tags:
     element:
       id: ".*:id/cardNumberET"
     direction: DOWN
-- assertVisible:
-    id: ".*:id/cardNumberET"
 - tapOn:
-    id: ".*:id/nameET"
-- inputText: "Rebecca Winter"
+    id: "com.saucelabs.mydemoapp.android:id/nameET"
+- inputText: "Casey Tester"
+- hideKeyboard
 - tapOn:
     id: ".*:id/cardNumberET"
-- inputText: "3258125675687891"
+- inputText: "4111111111111111"
 - hideKeyboard
 - scrollUntilVisible:
     element:
@@ -101,17 +111,23 @@ tags:
     direction: DOWN
 - tapOn:
     id: ".*:id/securityCodeET"
-- inputText: "123"
+- inputText: "321"
 - hideKeyboard
 - scrollUntilVisible:
     element:
       id: ".*:id/paymentBtn"
     direction: DOWN
+    centerElement: true
 - tapOn:
     id: ".*:id/paymentBtn"
 # Review order → place it.
 - assertVisible:
     text: "(?i)review your order"
+- scrollUntilVisible:
+    element:
+      id: ".*:id/paymentBtn"
+    direction: DOWN
+    centerElement: true
 - tapOn:
     id: ".*:id/paymentBtn"
 # Confirmation.
