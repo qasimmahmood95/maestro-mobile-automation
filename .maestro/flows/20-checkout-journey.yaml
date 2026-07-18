@@ -64,13 +64,20 @@ tags:
     id: ".*:id/countryET"
 - inputText: "United Kingdom"
 - hideKeyboard
+# centerElement so the button isn't left half-clipped at the screen edge
+# where a center-tap can miss.
 - scrollUntilVisible:
     element:
       id: ".*:id/paymentBtn"
     direction: DOWN
+    centerElement: true
 - tapOn:
     id: ".*:id/paymentBtn"
 # Payment details.
+- scrollUntilVisible:
+    element:
+      id: ".*:id/cardNumberET"
+    direction: DOWN
 - assertVisible:
     id: ".*:id/cardNumberET"
 - tapOn:

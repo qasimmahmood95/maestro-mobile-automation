@@ -21,6 +21,18 @@ timeout --signal=INT 600 maestro test .maestro \
   --output build/reports/junit.xml \
   --debug-output build/maestro-debug || status=$?
 
+if [[ $status -ne 0 ]]; then
+  # Artifact storage is not always reachable from every review environment,
+  # so put the end-state view hierarchy straight into the job log.
+  echo "--- view hierarchy at failure ---"
+  adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1 || true
+  adb shell cat /sdcard/ui.xml 2>/dev/null | head -c 30000 || true
+  echo ""
+  echo "--- end view hierarchy ---"
+  echo "--- maestro debug files ---"
+  find build -type f | head -50 || true
+fi
+
 if [[ $status -eq 0 ]]; then
   ./scripts/mutation-check.sh || status=$?
 fi
